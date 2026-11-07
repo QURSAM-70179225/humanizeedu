@@ -42,6 +42,9 @@ Paste your text. See how **AI-generated** it looks and how much of it carries **
 - **Locks direct quotes and citations in place.** It never changes facts, numbers or the argument.
 - Falls back to Google Gemini, then to a built-in offline rule engine, so it always returns a result
 
+**📚 Free writing guides**
+- [Avoiding false AI-detection flags](https://humanizeedu.onrender.com/guides/avoid-false-ai-detection), [APA 7 citation quick guide](https://humanizeedu.onrender.com/guides/apa-citation-guide), [Paraphrasing without plagiarism](https://humanizeedu.onrender.com/guides/paraphrase-without-plagiarism)
+
 **📊 Student toolkit**
 - Before/after table: AI %, plagiarism risk, reading grade, reading ease, sentence variety, tone, buzzword count
 - One-click copy, "Edit & run again", and a sample text to try it instantly
@@ -84,6 +87,7 @@ humanizeedu/
 │   └── ai.js            # Groq → Gemini → offline rewriting
 ├── public/
 │   ├── index.html       # Homepage with the tool
+│   ├── guides/          # SEO writing guides
 │   ├── privacy.html
 │   ├── css/style.css
 │   └── js/app.js        # Frontend logic and score gauges
@@ -119,6 +123,7 @@ No `npm install` is needed, because the project has no dependencies.
 | `GROQ_MODEL` | No | Default `llama-3.3-70b-versatile` |
 | `GEMINI_API_KEY` | No | Backup AI provider |
 | `RATE_LIMIT_PER_HOUR` | No | Checks per visitor per hour (default 30) |
+| `DONATE_URL` | No | Your Buy Me a Coffee / Ko-fi link. The ☕ Support buttons appear only when this is set |
 | `NODE_ENV` | No | `production` on the live server |
 
 > Never commit your `.env` file. It's already listed in `.gitignore`.

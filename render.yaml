@@ -19,3 +19,5 @@ services:
         value: "30"
       - key: GROQ_API_KEY
         sync: false
+      - key: DONATE_URL
+        sync: false

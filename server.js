@@ -45,6 +45,9 @@ function readJson(req) {
   });
 }
 
+const safeUrl = (u) => { try { const x = new URL(u); return x.protocol === 'https:' ? x.href : null; } catch { return null; } };
+const GUIDES = ['avoid-false-ai-detection', 'apa-citation-guide', 'paraphrase-without-plagiarism'];
+
 const sameOrigin = (req) => {
   const origin = req.headers.origin;
   if (!origin) return true;
@@ -85,7 +88,7 @@ async function handleHumanize(req, res) {
   });
 }
 
-const PAGES = { '/': 'index.html', '/privacy': 'privacy.html' };
+const PAGES = { '/': 'index.html', '/privacy': 'privacy.html', '/guides': 'guides/index.html', ...Object.fromEntries(GUIDES.map((g) => [`/guides/${g}`, `guides/${g}.html`])) };
 
 function serveStatic(req, res, pathname) {
   const rel = PAGES[pathname] || pathname.slice(1);
@@ -106,10 +109,10 @@ const server = http.createServer(async (req, res) => {
     const site = process.env.SITE_URL || `${PROD ? 'https' : 'http'}://${req.headers.host}`;
     if (pathname === '/robots.txt') return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${site}/sitemap.xml\n`, { 'Content-Type': MIME['.txt'] });
     if (pathname === '/sitemap.xml') {
-      const urls = [['/', '1.0', 'weekly'], ['/privacy', '0.3', 'yearly']].map(([p, pr, cf]) => `  <url><loc>${site}${p}</loc><lastmod>${BUILD_DATE}</lastmod><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`).join('\n');
+      const urls = [['/', '1.0', 'weekly'], ['/guides', '0.7', 'monthly'], ...GUIDES.map((g) => [`/guides/${g}`, '0.8', 'monthly']), ['/privacy', '0.3', 'yearly']].map(([p, pr, cf]) => `  <url><loc>${site}${p}</loc><lastmod>${BUILD_DATE}</lastmod><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`).join('\n');
       return send(res, 200, `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`, { 'Content-Type': MIME['.xml'] });
     }
-    if (pathname === '/api/config' && req.method === 'GET') return send(res, 200, { engine: activeEngine(), tones: Object.keys(TONES), styles: STYLES, levels: LEVELS, maxText: MAX_TEXT });
+    if (pathname === '/api/config' && req.method === 'GET') return send(res, 200, { donateUrl: safeUrl(process.env.DONATE_URL), engine: activeEngine(), tones: Object.keys(TONES), styles: STYLES, levels: LEVELS, maxText: MAX_TEXT });
     if (pathname === '/api/humanize') {
       if (req.method !== 'POST') return fail(res, 405, 'Method not allowed');
       return await handleHumanize(req, res);

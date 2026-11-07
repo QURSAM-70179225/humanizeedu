@@ -33,6 +33,10 @@ server.on('listening', async () => {
     for (let i = 0; i < 5; i++) await call('POST', '/api/humanize', { text });
     assert.equal((await call('POST', '/api/humanize', { text })).status, 429, 'rate limit');
     assert.ok((await call('GET', '/sitemap.xml')).body.includes('<urlset'));
+    for (const g of ['/guides', '/guides/avoid-false-ai-detection', '/guides/apa-citation-guide', '/guides/paraphrase-without-plagiarism'])
+      assert.equal((await call('GET', g)).status, 200, g);
+    assert.ok((await call('GET', '/sitemap.xml')).body.includes('/guides/apa-citation-guide'), 'guides in sitemap');
+    assert.equal((await call('GET', '/api/config')).body.donateUrl, null, 'donate hidden by default');
 
     console.log('✅ All smoke tests passed');
     console.log(`AI: ${before.ai.score}% → ${after.ai.score}%   Plagiarism risk: ${before.plagiarism.score}% → ${after.plagiarism.score}%`);
