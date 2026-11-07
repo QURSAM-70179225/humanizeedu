@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign up — HumanizeEdu AI</title>
+  <meta name="description" content="Create a free HumanizeEdu AI account to check and refine your own academic writing.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="auth">
+    <form class="auth-card" id="auth-form" data-mode="signup" novalidate>
+      <a class="brand" href="/"><img src="/favicon.svg" alt="" width="30" height="30">HumanizeEdu AI</a>
+      <h1>Create your account</h1>
+      <p class="sub">Free, private, and built for honest work.</p>
+      <label for="name">Full name</label>
+      <input id="name" name="name" autocomplete="name" required>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+      <label for="level">Academic level</label>
+      <select id="level" name="level">
+        <option>High School</option>
+        <option selected>Undergraduate</option>
+        <option>Postgraduate</option>
+      </select>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+      <p class="hint">At least 8 characters, with a letter and a number.</p>
+      <label class="check"><input type="checkbox" id="agree" required> I'll use HumanizeEdu to improve my own writing and will cite my sources.</label>
+      <button class="btn" type="submit">Create account</button>
+      <div class="msg" id="msg" role="alert"></div>
+      <p class="alt">Already registered? <a href="/login">Log in</a></p>
+    </form>
+  </main>
+  <script src="/js/auth.js"></script>
+</body>
+</html>

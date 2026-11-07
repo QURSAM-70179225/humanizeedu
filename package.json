@@ -1,0 +1,14 @@
+{
+  "name": "humanizeedu-ai",
+  "version": "1.0.0",
+  "description": "HumanizeEdu AI — ethical writing assistant, integrity scanner and text humanizer for students",
+  "main": "server.js",
+  "private": true,
+  "engines": { "node": ">=22.5.0" },
+  "scripts": {
+    "start": "node --no-warnings --env-file-if-exists=.env server.js",
+    "dev": "node --no-warnings --env-file-if-exists=.env --watch server.js",
+    "test": "node --no-warnings test/smoke.js"
+  },
+  "license": "UNLICENSED"
+}

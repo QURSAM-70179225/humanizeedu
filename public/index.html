@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HumanizeEdu AI — Free AI text humanizer for students</title>
+  <meta name="description" content="Free AI humanizer for students. Paste your text, see an AI-generated and plagiarism-risk estimate, and get a natural rewrite instantly. No sign-up needed.">
+  <meta property="og:title" content="HumanizeEdu AI — Free AI text humanizer for students">
+  <meta property="og:description" content="See your AI-generated and plagiarism-risk percentages, then rewrite robotic text in a natural student voice. No sign-up.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="/"><img src="/favicon.svg" alt="" width="30" height="30">HumanizeEdu AI</a>
+      <div class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#honesty">Honesty</a>
+        <a class="btn small" href="#tool">Humanize text</a>
+      </div>
+    </nav>
+
+    <header class="hero-mini">
+      <span class="eyebrow">Free · No sign-up</span>
+      <h1>Sound like <em>you</em>, not like a robot.</h1>
+      <p class="lead">Paste your text to see how AI-generated it looks and how much of it reads as borrowed. You get a natural rewrite in seconds, with your argument, quotes and citations kept intact.</p>
+    </header>
+
+    <!-- ===================== TOOL ===================== -->
+    <section id="tool" class="panel tool">
+      <form id="check-form">
+        <div class="controls">
+          <div><label for="tone">Tone</label><select id="tone"></select></div>
+          <div><label for="level">Academic level</label><select id="level"></select></div>
+          <div><label for="citation">Citation style</label><select id="citation"></select></div>
+        </div>
+        <label for="text">Your text</label>
+        <textarea id="text" maxlength="8000" placeholder="Paste the paragraph or essay you want to humanize…" required></textarea>
+        <div class="meta-row">
+          <span class="counter" id="counter">0 words · 0 / 8,000 characters</span>
+          <span class="tool-actions">
+            <button class="btn ghost small" id="sample-btn" type="button">Try a sample</button>
+            <button class="btn accent" id="run-btn" type="submit">Humanize now</button>
+          </span>
+        </div>
+        <p class="fine">Use it on writing that's yours, and cite every source you used. <span id="engine-label"></span></p>
+      </form>
+    </section>
+
+    <!-- ===================== RESULTS ===================== -->
+    <section class="results" id="results" aria-live="polite">
+      <div class="score-grid">
+        <div class="score-card">
+          <h3>AI-generated</h3>
+          <div class="gauges">
+            <div class="gauge-box"><div class="gauge" id="g-ai-before"></div><span>Before</span></div>
+            <div class="arrow">→</div>
+            <div class="gauge-box"><div class="gauge" id="g-ai-after"></div><span>After</span></div>
+          </div>
+          <p class="score-note" id="ai-note"></p>
+        </div>
+        <div class="score-card">
+          <h3>Plagiarism risk</h3>
+          <div class="gauges">
+            <div class="gauge-box"><div class="gauge" id="g-pl-before"></div><span>Before</span></div>
+            <div class="arrow">→</div>
+            <div class="gauge-box"><div class="gauge" id="g-pl-after"></div><span>After</span></div>
+          </div>
+          <p class="score-note" id="pl-note"></p>
+        </div>
+      </div>
+      <p class="note">Both percentages are HumanizeEdu's own estimates from writing patterns. They are not results from Turnitin, GPTZero or Copyleaks, and the plagiarism figure doesn't compare your text against the web or other papers. No tool can guarantee how a detector will score your work.</p>
+
+      <div class="panel">
+        <div class="section-title" style="justify-content:space-between">
+          <div style="display:flex;gap:10px;align-items:center"><span class="n">1</span><h2>Humanized version</h2></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="copy-btn" type="button">Copy text</button><button class="btn ghost small" id="reuse-btn" type="button">Edit &amp; run again</button></div>
+        </div>
+        <div class="cols">
+          <div><h3>Before</h3><div class="output original" id="out-original"></div></div>
+          <div><h3>After</h3><div class="output" id="out-human"></div></div>
+        </div>
+        <p class="engine" id="out-engine" style="margin-top:10px"></p>
+      </div>
+
+      <div class="panel">
+        <div class="section-title"><span class="n">2</span><h2>Diagnostic report</h2></div>
+        <div class="stats">
+          <div class="stat"><div class="k">Reading grade</div><div class="v" id="s-grade">–</div><div class="d" id="s-ease"></div></div>
+          <div class="stat"><div class="k">Sentence variety</div><div class="v" id="s-burst">–</div><div class="d">Human writing is usually 0.45+</div></div>
+          <div class="stat"><div class="k">Tone</div><div class="v" id="s-tone" style="font-size:1.1rem;padding-top:6px">–</div><div class="d" id="s-formal"></div></div>
+          <div class="stat"><div class="k">AI buzzwords</div><div class="v" id="s-buzz">–</div><div class="d" id="s-buzz-d"></div></div>
+        </div>
+        <div class="cols">
+          <div>
+            <h3>Overused AI vocabulary</h3>
+            <div class="chips" id="buzz"></div>
+            <h3 style="margin-top:18px">Sentences raising plagiarism risk</h3>
+            <ul class="issues" id="plag"></ul>
+          </div>
+          <div>
+            <h3>Copyright &amp; citation fixes</h3>
+            <ul class="issues" id="risks"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title"><span class="n">3</span><h2>Key improvements made</h2></div>
+        <div class="cols">
+          <div><ul class="improve" id="improve"></ul></div>
+          <div>
+            <table class="metrics">
+              <thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead>
+              <tbody id="metrics"></tbody>
+            </table>
+          </div>
+        </div>
+        <p class="note" style="margin-top:16px">Read the rewrite carefully and make it yours. Change anything that doesn't sound like you. If the plagiarism risk is still high, it's usually a quote or a fact that needs a citation, and rewording won't fix that.</p>
+      </div>
+    </section>
+  </div>
+
+  <section class="block" id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <div class="grid3" style="margin-top:28px">
+        <div class="feature"><div class="num">01</div><h3>Scan</h3><p>We estimate how AI-generated your text reads (from buzzwords, repetitive rhythm and stock transitions) and how much of it looks borrowed (from uncited quotes, facts and generic phrasing).</p></div>
+        <div class="feature"><div class="num">02</div><h3>Humanize</h3><p>Groq AI rewrites the text in the tone you pick. It varies sentence length and drops words like "delve" and "tapestry", and your quotes and citations stay exactly as they are.</p></div>
+        <div class="feature"><div class="num">03</div><h3>Compare</h3><p>You see both percentages before and after, the sentences that still need a source, and APA, MLA, Chicago or IEEE citation hints.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="honesty">
+    <div class="wrap">
+      <div class="pledge">
+        <div>
+          <h2>Built for honesty, not ghostwriting</h2>
+          <p>HumanizeEdu is for polishing work you wrote yourself, fixing false-positive AI flags, and making sure every source gets credit. It never invents facts or sources, and nothing you paste is stored.</p>
+        </div>
+        <ul>
+          <li>Your argument, thesis and facts are never changed.</li>
+          <li>Direct quotes and citations are locked in place.</li>
+          <li>Uncited quotes and facts are flagged so you can credit them.</li>
+          <li>The percentages are estimates, not Turnitin or GPTZero results.</li>
+          <li>Always follow your institution's policy on AI tools.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© <span id="yr"></span> HumanizeEdu AI</span>
+      <span><a href="/privacy">Privacy</a></span>
+    </div>
+  </footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/js/site.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in — HumanizeEdu AI</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="auth">
+    <form class="auth-card" id="auth-form" data-mode="login" novalidate>
+      <a class="brand" href="/"><img src="/favicon.svg" alt="" width="30" height="30">HumanizeEdu AI</a>
+      <h1>Welcome back</h1>
+      <p class="sub">Log in to your writing workspace.</p>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn" type="submit">Log in</button>
+      <div class="msg" id="msg" role="alert"></div>
+      <p class="alt">New here? <a href="/signup">Create an account</a></p>
+    </form>
+  </main>
+  <script src="/js/auth.js"></script>
+</body>
+</html>

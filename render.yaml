@@ -1,0 +1,21 @@
+# Render Blueprint: free web hosting for HumanizeEdu AI.
+# Render → New → Blueprint → pick this repo. It will ask you for GROQ_API_KEY.
+services:
+  - type: web
+    name: humanizeedu
+    runtime: node
+    plan: free
+    buildCommand: echo "no build step needed"
+    startCommand: node --no-warnings server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: RATE_LIMIT_PER_HOUR
+        value: "30"
+      - key: GROQ_API_KEY
+        sync: false

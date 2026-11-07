@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workspace — HumanizeEdu AI</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side" id="side">
+      <a class="brand" href="/"><img src="/favicon.svg" alt="" width="30" height="30">HumanizeEdu</a>
+      <button class="btn accent" id="new-btn" type="button">+ New check</button>
+      <h3>Your history</h3>
+      <ul class="history" id="history"><li class="empty">Loading…</li></ul>
+      <div class="user-box">
+        <strong id="u-name">…</strong>
+        <span id="u-meta" style="color:var(--muted)"></span>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn ghost small" id="settings-btn" type="button">Settings</button>
+          <button class="btn ghost small" id="logout-btn" type="button">Log out</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header>
+        <div>
+          <button class="btn ghost small menu-btn" id="menu-btn" type="button" aria-label="Open history">☰ History</button>
+          <h1 style="margin:8px 0 4px">Writing workspace</h1>
+          <p>Paste your own draft, pick a tone, and get a diagnosis plus a natural rewrite.</p>
+        </div>
+        <span class="engine" id="engine-label"></span>
+      </header>
+
+      <form class="panel" id="check-form">
+        <div class="controls">
+          <div><label for="title">Title (optional)</label><input id="title" maxlength="100" placeholder="e.g. Cloud Computing essay — intro"></div>
+          <div><label for="tone">Tone</label><select id="tone"></select></div>
+          <div><label for="citation">Citation style</label><select id="citation"></select></div>
+        </div>
+        <label for="text">Your draft</label>
+        <textarea id="text" maxlength="12000" placeholder="Paste a paragraph or a few paragraphs you wrote…" required></textarea>
+        <div class="meta-row">
+          <span class="counter" id="counter">0 words · 0 / 12,000 characters</span>
+          <label class="check" style="margin:0"><input type="checkbox" id="pledge"> This is my own work, and I'll cite every source I used.</label>
+          <button class="btn" id="run-btn" type="submit">Scan &amp; humanize</button>
+        </div>
+      </form>
+
+      <div class="results" id="results">
+        <!-- 1. Diagnostic -->
+        <div class="panel">
+          <div class="section-title"><span class="n">1</span><h2>Diagnostic report</h2></div>
+          <div class="stats">
+            <div class="stat"><div class="k">AI-style likelihood</div><div class="v" id="s-ai">–</div><div class="meter" id="s-ai-meter"><i></i></div></div>
+            <div class="stat"><div class="k">Reading grade</div><div class="v" id="s-grade">–</div><div class="d" id="s-ease"></div></div>
+            <div class="stat"><div class="k">Sentence variety</div><div class="v" id="s-burst">–</div><div class="d">Human writing is usually 0.45+</div></div>
+            <div class="stat"><div class="k">Tone</div><div class="v" id="s-tone" style="font-size:1.1rem;padding-top:6px">–</div><div class="d" id="s-formal"></div></div>
+          </div>
+          <p class="note">The AI-style score is HumanizeEdu's own estimate of how detectors like Turnitin, GPTZero or Copyleaks <em>might</em> react. It isn't a result from those tools, and no tool can guarantee how they'll score your work.</p>
+          <div class="cols" style="margin-top:16px">
+            <div>
+              <h3>Overused AI vocabulary</h3>
+              <div class="chips" id="buzz"></div>
+              <h3 style="margin-top:18px">Originality: where your own insight is needed</h3>
+              <ul class="issues" id="orig"></ul>
+            </div>
+            <div>
+              <h3>Copyright &amp; source risks</h3>
+              <ul class="issues" id="risks"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Humanized -->
+        <div class="panel">
+          <div class="section-title" style="justify-content:space-between">
+            <div style="display:flex;gap:10px;align-items:center"><span class="n">2</span><h2>Humanized version</h2></div>
+            <div style="display:flex;gap:8px"><button class="btn small" id="copy-btn" type="button">Copy text</button><button class="btn ghost small" id="reuse-btn" type="button">Edit &amp; re-scan</button></div>
+          </div>
+          <div class="cols">
+            <div><h3>Before</h3><div class="output original" id="out-original"></div></div>
+            <div><h3>After <span class="badge" id="after-badge"></span></h3><div class="output" id="out-human"></div></div>
+          </div>
+          <p class="engine" id="out-engine" style="margin-top:10px"></p>
+        </div>
+
+        <!-- 3. Improvements -->
+        <div class="panel">
+          <div class="section-title"><span class="n">3</span><h2>Key improvements made</h2></div>
+          <div class="cols">
+            <div><ul class="improve" id="improve"></ul></div>
+            <div>
+              <table class="metrics">
+                <thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead>
+                <tbody id="metrics"></tbody>
+              </table>
+            </div>
+          </div>
+          <p class="note" style="margin-top:16px">Read the rewrite carefully and make it yours. Change any phrase that doesn't sound like you, and keep your course's AI-use policy in mind.</p>
+          <div style="margin-top:14px"><button class="btn danger small" id="delete-btn" type="button">Delete this check</button></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="settings">
+    <form method="dialog" id="settings-form">
+      <h2>Settings</h2>
+      <label for="set-name">Name</label>
+      <input id="set-name" maxlength="80">
+      <label for="set-level">Academic level</label>
+      <select id="set-level"></select>
+      <div style="display:flex;gap:8px;margin-top:18px;justify-content:space-between;flex-wrap:wrap">
+        <button class="btn danger small" id="delete-account" type="button">Delete account</button>
+        <span style="display:flex;gap:8px"><button class="btn ghost small" value="cancel">Cancel</button><button class="btn small" id="save-settings" type="button">Save</button></span>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/js/app.js"></script>
+</body>
+</html>
