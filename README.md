@@ -88,7 +88,7 @@ humanizeedu/
 ├── public/
 │   ├── index.html       # Homepage with the tool
 │   ├── guides/          # SEO writing guides
-│   ├── privacy.html
+│   ├── about.html, contact.html, privacy.html, terms.html
 │   ├── css/style.css
 │   └── js/app.js        # Frontend logic and score gauges
 ├── test/smoke.js        # End-to-end tests
@@ -124,6 +124,10 @@ No `npm install` is needed, because the project has no dependencies.
 | `GEMINI_API_KEY` | No | Backup AI provider |
 | `RATE_LIMIT_PER_HOUR` | No | Checks per visitor per hour (default 30) |
 | `DONATE_URL` | No | Your Buy Me a Coffee / Ko-fi link. The ☕ Support buttons appear only when this is set |
+| `CONTACT_EMAIL` | No | Email shown on the Contact, Privacy and Terms pages |
+| `GOOGLE_SITE_VERIFICATION` | No | Search Console verification code (the `content` value only) |
+| `ADSENSE_CLIENT` | No | AdSense ID like `ca-pub-123…`. Turns on Auto ads, `/ads.txt` and the matching security policy |
+| `SITE_URL` | No | Your custom domain, e.g. `https://humanizeedu.com`. Updates canonical links and sitemap, and redirects `*.onrender.com` to it |
 | `NODE_ENV` | No | `production` on the live server |
 
 > Never commit your `.env` file. It's already listed in `.gitignore`.

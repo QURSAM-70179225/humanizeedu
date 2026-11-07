@@ -244,3 +244,9 @@ table.cheat th { background: var(--card); font-size: .78rem; text-transform: upp
 .guide-card p { color: var(--muted); margin: 0; flex: 1; }
 .guide-card span { color: var(--accent); font-weight: 700; margin-top: 8px; }
 @media (max-width: 900px) { .guide-grid, .compare { grid-template-columns: 1fr; } }
+
+/* Contact + footer links */
+.contact-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 24px; margin: 20px 0; }
+.contact-card .k { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
+.contact-card .v { font-family: var(--serif); font-size: 1.4rem; margin: 4px 0; }
+.foot-links { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; }

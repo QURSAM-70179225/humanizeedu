@@ -1,5 +1,13 @@
 // HumanizeEdu AI — zero-dependency Node.js server (Node 22+). No login, no database.
 // Run locally:  npm start   →  http://localhost:8080
+//
+// Optional settings (set them as Environment Variables on Render):
+//   GROQ_API_KEY              AI rewriting
+//   SITE_URL                  your main address, e.g. https://humanizeedu.com (default: the onrender.com address)
+//   CONTACT_EMAIL             email shown on the Contact / Privacy pages
+//   DONATE_URL                Buy Me a Coffee / Ko-fi link (shows ☕ Support buttons)
+//   ADSENSE_CLIENT            your AdSense ID, e.g. ca-pub-1234567890123456 (turns on ads + /ads.txt)
+//   GOOGLE_SITE_VERIFICATION  the content="…" value from Search Console's HTML-tag method
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -13,18 +21,30 @@ const MAX_BODY = 100 * 1024;
 const MAX_TEXT = 8000;
 const LEVELS = ['High School', 'Undergraduate', 'Postgraduate'];
 const STYLES = ['APA', 'MLA', 'Chicago', 'IEEE'];
-// Free public tool → limit each visitor so nobody can burn through your Groq quota.
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
+// Free public tool → limit each visitor so nobody can burn through your Groq quota.
 const RATE_MAX = Number(process.env.RATE_LIMIT_PER_HOUR || 30);
+
+const DEFAULT_SITE = 'https://humanizeedu.onrender.com';
+const SITE_URL = (process.env.SITE_URL || DEFAULT_SITE).replace(/\/+$/, '');
+const SITE_HOST = (() => { try { return new URL(SITE_URL).host; } catch { return ''; } })();
+const ADSENSE = /^ca-pub-\d{10,20}$/.test(process.env.ADSENSE_CLIENT || '') ? process.env.ADSENSE_CLIENT : null;
+const GSV = /^[\w-]{10,100}$/.test(process.env.GOOGLE_SITE_VERIFICATION || '') ? process.env.GOOGLE_SITE_VERIFICATION : null;
+const CONTACT_EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]{2,}$/.test(process.env.CONTACT_EMAIL || '') ? process.env.CONTACT_EMAIL : null;
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml', '.json': 'application/json' };
+
+// Strict security policy; loosened only as far as Google AdSense needs when ads are switched on.
+const CSP = ADSENSE
+  ? "default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; font-src https: data:; img-src 'self' data: https:; frame-src https:; connect-src 'self' https:; frame-ancestors 'none'"
+  : "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self'; connect-src 'self'; frame-ancestors 'none'";
 
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+  'Content-Security-Policy': CSP,
   ...(PROD ? { 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains' } : {}),
 };
 
@@ -88,28 +108,73 @@ async function handleHumanize(req, res) {
   });
 }
 
-const PAGES = { '/': 'index.html', '/privacy': 'privacy.html', '/guides': 'guides/index.html', ...Object.fromEntries(GUIDES.map((g) => [`/guides/${g}`, `guides/${g}.html`])) };
+// ---------- pages ----------
+const PAGES = {
+  '/': 'index.html', '/privacy': 'privacy.html', '/about': 'about.html', '/contact': 'contact.html', '/terms': 'terms.html',
+  '/guides': 'guides/index.html', ...Object.fromEntries(GUIDES.map((g) => [`/guides/${g}`, `guides/${g}.html`])),
+};
+const SITEMAP = [['/', '1.0', 'weekly'], ['/guides', '0.7', 'monthly'], ...GUIDES.map((g) => [`/guides/${g}`, '0.8', 'monthly']),
+  ['/about', '0.5', 'yearly'], ['/contact', '0.4', 'yearly'], ['/privacy', '0.3', 'yearly'], ['/terms', '0.3', 'yearly']];
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Extra <head> tags added to every page, driven by the settings above.
+const HEAD_EXTRA = [
+  GSV && `<meta name="google-site-verification" content="${esc(GSV)}">`,
+  ADSENSE && `<meta name="google-adsense-account" content="${ADSENSE}">`,
+  ADSENSE && `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE}" crossorigin="anonymous"></script>`,
+].filter(Boolean).join('\n  ');
+
+const contactHtml = CONTACT_EMAIL
+  ? `<a href="mailto:${esc(CONTACT_EMAIL)}">${esc(CONTACT_EMAIL)}</a>`
+  : 'the email address listed on our <a href="/contact">Contact page</a>';
+
+const htmlCache = new Map();
+function renderHtml(file) {
+  if (!htmlCache.has(file) || !PROD) {
+    let html = fs.readFileSync(file, 'utf8')
+      .replaceAll('{{SITE_URL}}', SITE_URL)
+      .replaceAll('{{CONTACT}}', contactHtml)
+      .replaceAll('{{CONTACT_EMAIL}}', CONTACT_EMAIL ? esc(CONTACT_EMAIL) : 'Coming soon');
+    if (HEAD_EXTRA) html = html.replace('</head>', `  ${HEAD_EXTRA}\n</head>`);
+    htmlCache.set(file, html);
+  }
+  return htmlCache.get(file);
+}
 
 function serveStatic(req, res, pathname) {
   const rel = PAGES[pathname] || pathname.slice(1);
   const file = path.normalize(path.join(PUBLIC, rel));
   if (!file.startsWith(PUBLIC + path.sep)) return fail(res, 403, 'Forbidden');
   fs.stat(file, (err, st) => {
-    if (err || !st.isFile()) return send(res, 404, fs.readFileSync(path.join(PUBLIC, '404.html')), { 'Content-Type': MIME['.html'] });
+    if (err || !st.isFile()) return send(res, 404, renderHtml(path.join(PUBLIC, '404.html')), { 'Content-Type': MIME['.html'] });
     const ext = path.extname(file);
-    res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600' });
+    if (ext === '.html') return send(res, 200, renderHtml(file), { 'Content-Type': MIME['.html'], 'Cache-Control': 'no-cache' });
+    res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': 'public, max-age=3600' });
     fs.createReadStream(file).pipe(res);
   });
 }
 
+// ---------- main handler ----------
 const server = http.createServer(async (req, res) => {
-  const { pathname } = new URL(req.url, 'http://x');
+  const url = new URL(req.url, 'http://x');
+  const { pathname } = url;
   try {
     if (pathname === '/healthz') return send(res, 200, { ok: true });
-    const site = process.env.SITE_URL || `${PROD ? 'https' : 'http'}://${req.headers.host}`;
-    if (pathname === '/robots.txt') return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${site}/sitemap.xml\n`, { 'Content-Type': MIME['.txt'] });
+
+    // Once you use your own domain, send visitors (and Google) from *.onrender.com to it — one address = better SEO.
+    const host = (req.headers.host || '').toLowerCase();
+    if (PROD && SITE_HOST && host !== SITE_HOST && host.endsWith('.onrender.com') && (req.method === 'GET' || req.method === 'HEAD') && !pathname.startsWith('/api/')) {
+      return send(res, 301, '', { Location: SITE_URL + pathname + url.search });
+    }
+
+    if (pathname === '/robots.txt') return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`, { 'Content-Type': MIME['.txt'] });
+    if (pathname === '/ads.txt') {
+      if (!ADSENSE) return send(res, 404, 'Not found', { 'Content-Type': MIME['.txt'] });
+      return send(res, 200, `google.com, ${ADSENSE.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n`, { 'Content-Type': MIME['.txt'] });
+    }
     if (pathname === '/sitemap.xml') {
-      const urls = [['/', '1.0', 'weekly'], ['/guides', '0.7', 'monthly'], ...GUIDES.map((g) => [`/guides/${g}`, '0.8', 'monthly']), ['/privacy', '0.3', 'yearly']].map(([p, pr, cf]) => `  <url><loc>${site}${p}</loc><lastmod>${BUILD_DATE}</lastmod><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`).join('\n');
+      const urls = SITEMAP.map(([p, pr, cf]) => `  <url><loc>${SITE_URL}${p}</loc><lastmod>${BUILD_DATE}</lastmod><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`).join('\n');
       return send(res, 200, `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`, { 'Content-Type': MIME['.xml'] });
     }
     if (pathname === '/api/config' && req.method === 'GET') return send(res, 200, { donateUrl: safeUrl(process.env.DONATE_URL), engine: activeEngine(), tones: Object.keys(TONES), styles: STYLES, levels: LEVELS, maxText: MAX_TEXT });
@@ -127,5 +192,5 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log(`HumanizeEdu AI running on http://localhost:${PORT}  (AI engine: ${activeEngine() || 'offline rules'})`));
+server.listen(PORT, () => console.log(`HumanizeEdu AI running on http://localhost:${PORT}  (AI engine: ${activeEngine() || 'offline rules'}; ads: ${ADSENSE ? 'on' : 'off'})`));
 module.exports = server;

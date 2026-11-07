@@ -37,6 +37,14 @@ server.on('listening', async () => {
       assert.equal((await call('GET', g)).status, 200, g);
     assert.ok((await call('GET', '/sitemap.xml')).body.includes('/guides/apa-citation-guide'), 'guides in sitemap');
     assert.equal((await call('GET', '/api/config')).body.donateUrl, null, 'donate hidden by default');
+    for (const pg of ['/about', '/contact', '/privacy', '/terms']) {
+      const r = await call('GET', pg);
+      assert.equal(r.status, 200, pg);
+      assert.ok(!r.body.includes('{{'), `no leftover placeholders on ${pg}`);
+    }
+    assert.ok((await call('GET', '/')).body.includes('<link rel="canonical" href="https://humanizeedu.onrender.com/">'), 'canonical filled in');
+    assert.equal((await call('GET', '/ads.txt')).status, 404, 'no ads.txt until AdSense is set');
+    assert.ok(!(await call('GET', '/')).body.includes('adsbygoogle'), 'no ad script by default');
 
     console.log('✅ All smoke tests passed');
     console.log(`AI: ${before.ai.score}% → ${after.ai.score}%   Plagiarism risk: ${before.plagiarism.score}% → ${after.plagiarism.score}%`);
