@@ -14,6 +14,7 @@ const MAX_TEXT = 8000;
 const LEVELS = ['High School', 'Undergraduate', 'Postgraduate'];
 const STYLES = ['APA', 'MLA', 'Chicago', 'IEEE'];
 // Free public tool → limit each visitor so nobody can burn through your Groq quota.
+const BUILD_DATE = new Date().toISOString().slice(0, 10);
 const RATE_MAX = Number(process.env.RATE_LIMIT_PER_HOUR || 30);
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -105,7 +106,7 @@ const server = http.createServer(async (req, res) => {
     const site = process.env.SITE_URL || `${PROD ? 'https' : 'http'}://${req.headers.host}`;
     if (pathname === '/robots.txt') return send(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${site}/sitemap.xml\n`, { 'Content-Type': MIME['.txt'] });
     if (pathname === '/sitemap.xml') {
-      const urls = ['/', '/privacy'].map((p) => `  <url><loc>${site}${p}</loc></url>`).join('\n');
+      const urls = [['/', '1.0', 'weekly'], ['/privacy', '0.3', 'yearly']].map(([p, pr, cf]) => `  <url><loc>${site}${p}</loc><lastmod>${BUILD_DATE}</lastmod><changefreq>${cf}</changefreq><priority>${pr}</priority></url>`).join('\n');
       return send(res, 200, `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`, { 'Content-Type': MIME['.xml'] });
     }
     if (pathname === '/api/config' && req.method === 'GET') return send(res, 200, { engine: activeEngine(), tones: Object.keys(TONES), styles: STYLES, levels: LEVELS, maxText: MAX_TEXT });
